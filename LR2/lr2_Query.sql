@@ -76,12 +76,12 @@ ELSE cost_nm * 0.95
 END;
 
 /*12Предпритие арендовавшее максимальное количество мест на одной выставке и участвовало в не менее одной выставке */
-SELECT company.name_co, exibitions.topic, COUNT(rent_place.id_co) AS cnt
-FROM rent_place
-JOIN exibitions  ON rent_place.id_ex = exibitions.id_ex
-JOIN company  ON rent_place.id_co = company.id_co
-WHERE rent_place.id_co
-IN  (SELECT id_co FROM rent_place GROUP BY id_co  HAVING count(id_co)  > 1)
-GROUP BY rent_place.id_co, exibitions.topic, company.name_co
-ORDER BY cnt DESC
-FETCH FIRST ROW ONLY
+SELECT   Company, Counts, max(Place) FROM
+(SELECT  Company, Counts, Place  FROM
+(SELECT   count(company.name_co)  AS Counts,company.name_co as Company,  exibitions.topic,  count( rent_place.id_pl) AS Place
+FROM exibitions 
+INNER JOIN (company INNER JOIN rent_place ON company.id_co = rent_place.id_co) ON exibitions.id_ex = rent_place.id_ex
+GROUP BY  company.name_co, exibitions.topic)
+GROUP BY Company, Counts, Place)
+HAVING (Counts)>1 AND (Place)>1
+GROUP BY Company, Counts, Place
